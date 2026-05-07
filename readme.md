@@ -2,6 +2,10 @@ TeamFinder
 
 TeamFinder - веб-приложение на Django для поиска команды под pet-проекты.
 
+Автор:
+YanaKasaeva
+GitHub: https://github.com/YanaKasaeva
+
 Реализован вариант 1:
 - избранные проекты;
 - страница избранных проектов;
@@ -76,20 +80,9 @@ http://127.0.0.1:8000/admin/
 
 Проверка проекта:
 
-Django check:
-
 python manage.py check
-
-Тесты:
-
 python manage.py test
-
-Форматирование:
-
 black users projects team_finder
-
-PEP8 / lint:
-
 ruff check users projects team_finder
 
 Что реализовано:

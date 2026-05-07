@@ -1,4 +1,6 @@
-from django.test import TestCase
+from http import HTTPStatus
+
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from projects.models import Project
@@ -7,8 +9,9 @@ from users.models import User
 
 
 class UserViewsTests(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
             email="user@example.com",
             password="password",
             name="User",
@@ -19,46 +22,47 @@ class UserViewsTests(TestCase):
     def test_register_page_opens(self):
         response = self.client.get(reverse("users:register"))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_login_page_opens(self):
         response = self.client.get(reverse("users:login"))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_users_list_page_opens(self):
         response = self.client.get(reverse("users:list"))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(response, "User")
 
     def test_user_detail_page_opens(self):
         response = self.client.get(reverse("users:detail", args=[self.user.pk]))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(response, "User")
 
     def test_edit_profile_requires_login(self):
         response = self.client.get(reverse("users:edit_profile"))
 
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_change_password_requires_login(self):
         response = self.client.get(reverse("users:change_password"))
 
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
 
 class ProfileFormTests(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user(
             email="user@example.com",
             password="password",
             name="User",
             surname="Test",
             phone="+79990000001",
         )
-        self.other_user = User.objects.create_user(
+        cls.other_user = User.objects.create_user(
             email="other@example.com",
             password="password",
             name="Other",
@@ -124,35 +128,38 @@ class ProfileFormTests(TestCase):
 
 
 class UserFilterTests(TestCase):
-    def setUp(self):
-        self.owner = User.objects.create_user(
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = User.objects.create_user(
             email="owner@example.com",
             password="password",
             name="Owner",
             surname="Test",
             phone="+79990000001",
         )
-        self.viewer = User.objects.create_user(
+        cls.viewer = User.objects.create_user(
             email="viewer@example.com",
             password="password",
             name="Viewer",
             surname="Test",
             phone="+79990000002",
         )
-        self.project = Project.objects.create(
+        cls.project = Project.objects.create(
             name="Owner project",
             description="Description",
-            owner=self.owner,
+            owner=cls.owner,
         )
+        cls.viewer.favorites.add(cls.project)
+
+    def setUp(self):
+        self.viewer_client = Client()
+        self.viewer_client.force_login(self.viewer)
 
     def test_favorite_authors_filter(self):
-        self.viewer.favorites.add(self.project)
-        self.client.login(email="viewer@example.com", password="password")
-
-        response = self.client.get(
+        response = self.viewer_client.get(
             reverse("users:list"),
             {"filter": "owners-of-favorite-projects"},
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertContains(response, "Owner")

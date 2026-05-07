@@ -1,6 +1,6 @@
-from urllib.parse import urlparse
-
 from django import forms
+
+from team_finder.validators import validate_github_url
 
 from .models import Project
 
@@ -10,19 +10,8 @@ class ProjectForm(forms.ModelForm):
         model = Project
         fields = ["name", "description", "github_url", "status"]
         widgets = {
-            "status": forms.Select(
-                choices=[
-                    (Project.STATUS_OPEN, "Открыт"),
-                    (Project.STATUS_CLOSED, "Закрыт"),
-                ]
-            )
+            "status": forms.Select(choices=Project.STATUS_CHOICES),
         }
 
     def clean_github_url(self):
-        url = self.cleaned_data.get("github_url")
-        if not url:
-            return url
-        host = urlparse(url).netloc.lower()
-        if host not in {"github.com", "www.github.com"}:
-            raise forms.ValidationError("Ссылка должна вести именно на GitHub")
-        return url
+        return validate_github_url(self.cleaned_data.get("github_url"))
