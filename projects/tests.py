@@ -31,12 +31,11 @@ class ProjectViewsTests(TestCase):
             status=Project.STATUS_OPEN,
         )
 
-    def setUp(self):
-        self.user_client = Client()
-        self.user_client.force_login(self.user)
+        cls.user_client = Client()
+        cls.user_client.force_login(cls.user)
 
-        self.other_user_client = Client()
-        self.other_user_client.force_login(self.other_user)
+        cls.other_user_client = Client()
+        cls.other_user_client.force_login(cls.other_user)
 
     def test_projects_list_page_opens(self):
         response = self.client.get(reverse("projects:list"))

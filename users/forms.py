@@ -3,9 +3,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.forms import PasswordChangeForm
 
 from team_finder.validators import validate_github_url
-
-from .models import User
-from .services import normalize_phone
+from users.models import User
+from users.services import normalize_phone
 
 
 class RegisterForm(forms.ModelForm):

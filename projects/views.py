@@ -5,20 +5,14 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from team_finder.constants import PROJECTS_PER_PAGE
+from projects.forms import ProjectForm
+from projects.models import Project
+from projects.services import get_projects_queryset
 from team_finder.services import paginate_queryset
-
-from .forms import ProjectForm
-from .models import Project
-from .services import (
-    get_favorite_projects_queryset,
-    get_project_queryset,
-    get_projects_queryset,
-)
 
 
 def projects_list(request):
-    page_obj = paginate_queryset(request, get_projects_queryset(), PROJECTS_PER_PAGE)
+    page_obj = paginate_queryset(request, get_projects_queryset())
 
     return render(
         request,
@@ -28,7 +22,7 @@ def projects_list(request):
 
 
 def project_detail(request, project_id):
-    project = get_object_or_404(get_project_queryset(), id=project_id)
+    project = get_object_or_404(get_projects_queryset(), id=project_id)
 
     return render(request, "projects/project-details.html", {"project": project})
 
@@ -37,8 +31,7 @@ def project_detail(request, project_id):
 def favorite_projects(request):
     page_obj = paginate_queryset(
         request,
-        get_favorite_projects_queryset(request.user),
-        PROJECTS_PER_PAGE,
+        get_projects_queryset(request.user.favorites),
     )
 
     return render(
